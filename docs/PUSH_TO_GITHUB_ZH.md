@@ -43,9 +43,6 @@ git push -u origin main
 
 ## 嵌套 Git 处理
 
-为合并为单一仓库，已重命名：
+为合并为单一仓库，曾将 `graphrag/.git`、`hermes-agent/.git` 重命名为 `.git.vendor-backup-*`。**这些备份目录体积超过 GitHub 100MB 限制，已从仓库删除**，请勿再提交。
 
-- `graphrag/.git` → `graphrag/.git.vendor-backup-microsoft-graphrag`
-- `hermes-agent/.git` → `hermes-agent/.git.vendor-backup-hermes`
-
-若需恢复 upstream 跟踪，可改回目录名。
+若需恢复 upstream 跟踪，请重新 `git clone` 对应上游仓库。
