@@ -1,0 +1,35 @@
+﻿Source: E:\ubuntu\wenet-asr\minimal_craft
+Target: E:\ubuntu\wenet-asr\minimal_craft_deploy
+
+Included (top-level):
+- backend/
+- frontend/
+- paraformer_model/
+- _wenet_pkg/
+- .env
+- .gitignore
+- check_prereqs.py
+- index-ori.html
+- minimal_streaming.py
+- README.md
+- realtime_gui.py
+- setup_windows.ps1
+- start_gui.bat
+
+Excluded directories:
+- .venv/
+- node_modules/
+- dist/
+- __pycache__/
+- recordings/
+- .git/
+
+Excluded files:
+- short_test.wav
+- *.pyc
+- *.pyo
+- *.log
+
+Additional cleanup in target:
+- _wenet_pkg/build removed
+- _wenet_pkg/wenet.egg-info removed

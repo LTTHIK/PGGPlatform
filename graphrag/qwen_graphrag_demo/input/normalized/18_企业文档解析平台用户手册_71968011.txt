@@ -1,0 +1,26 @@
+---metadata---
+{"source_file": "/mnt/dockerContainerSave/memory/qhq/graphrag/qwen_graphrag_demo/data/18_企业文档解析平台用户手册.html", "filename": "18_企业文档解析平台用户手册.html", "suffix": ".html"}
+---content---
+企业文档解析平台用户手册
+星航智能科技有限公司 企业文档解析平台用户手册
+该平台支持 Word、PDF、PPT、Excel、CSV、TXT、Markdown、HTML、图片等文件解析。
+主要流程
+上传原始文件。
+转换为可检索文本或结构化JSON。
+进行文本切块和元数据绑定。
+写入向量数据库。
+抽取实体关系并写入知识图谱。
+提供问答、溯源、权限过滤和审计日志。
+推荐元数据字段
+字段
+说明
+source_file
+原始文件名
+department
+所属部门
+project_id
+关联项目ID
+owner
+负责人
+security_level
+数据安全等级

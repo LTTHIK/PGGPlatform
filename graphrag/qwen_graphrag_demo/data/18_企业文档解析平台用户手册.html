@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="zh-CN"><head><meta charset="utf-8"><title>企业文档解析平台用户手册</title></head>
+<body>
+<h1>星航智能科技有限公司 企业文档解析平台用户手册</h1>
+<p>该平台支持 Word、PDF、PPT、Excel、CSV、TXT、Markdown、HTML、图片等文件解析。</p>
+<h2>主要流程</h2>
+<ol>
+<li>上传原始文件。</li>
+<li>转换为可检索文本或结构化JSON。</li>
+<li>进行文本切块和元数据绑定。</li>
+<li>写入向量数据库。</li>
+<li>抽取实体关系并写入知识图谱。</li>
+<li>提供问答、溯源、权限过滤和审计日志。</li>
+</ol>
+<h2>推荐元数据字段</h2>
+<table border="1">
+<tr><th>字段</th><th>说明</th></tr>
+<tr><td>source_file</td><td>原始文件名</td></tr>
+<tr><td>department</td><td>所属部门</td></tr>
+<tr><td>project_id</td><td>关联项目ID</td></tr>
+<tr><td>owner</td><td>负责人</td></tr>
+<tr><td>security_level</td><td>数据安全等级</td></tr>
+</table>
+</body></html>

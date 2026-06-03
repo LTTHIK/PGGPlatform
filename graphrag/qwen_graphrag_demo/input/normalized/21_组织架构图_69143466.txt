@@ -1,0 +1,45 @@
+---metadata---
+{"source_file": "/mnt/dockerContainerSave/memory/qhq/graphrag/qwen_graphrag_demo/data/21_组织架构图.png", "filename": "21_组织架构图.png", "suffix": ".png"}
+---content---
+## 视觉模型描述
+星航智能科技有限公司设6部门，各部负责人及下属人员明确。
+
+## OCR 识别文本
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+ 
+
+星航智能科技有|
+算法研发部                    平台工程部                    数据治理部                    项目交付部                    产品与解决方案部
+负责人 : 王磊          负责人 : 李婷          负责人 : 刘博          负责人 : 赵凯          负责人 : 周琪
+王磊                           ae                           刘博                           赵凯                           周琪
+陈洗                                      何远                                      唐十                                      马强                                      FR
+李明                                      高宁

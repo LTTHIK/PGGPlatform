@@ -1,0 +1,41 @@
+---metadata---
+{"source_file": "/mnt/dockerContainerSave/memory/qhq/graphrag/qwen_graphrag_demo/data/22_办公地点示意图.png", "filename": "22_办公地点示意图.png", "suffix": ".png"}
+---content---
+## 视觉模型描述
+公司三地办公：上海总部、深圳研发中心、成都交付中心。
+
+## OCR 识别文本
+ 
+
+|
+
+公司办公地点示意
+
+ 
+
+ 
+
+ 
+
+上海总部
+张江人工智能岛 ; 算法/平台/产品
+
+    
+
+ 
+
+ 
+
+REBT Ly
+件园 ; 交付/运维
+
+ 
+                                                                                                                              
+    
+
+深圳研发中心
+南山科技园 ; 数据/模型评估
+
+ 
+
+说明 : 该图片用于测试图片OCR、地点实体抽取、地点之间关系识别。

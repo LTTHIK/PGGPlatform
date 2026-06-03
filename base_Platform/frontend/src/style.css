@@ -1,0 +1,25 @@
+@import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+body {
+  font-family: 'Inter', sans-serif;
+  background-color: #F4F4F2;
+  overflow: hidden;
+}
+
+.font-serif {
+  font-family: 'Noto Serif SC', serif;
+}
+
+::-webkit-scrollbar { width: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: #D1D1C7; border-radius: 10px; }
+::-webkit-scrollbar-thumb:hover { background: #C8A064; }
+
+.animate-in { animation: fadeIn 0.4s ease-out forwards; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+.transition-all-500 { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+.scrollbar-hide::-webkit-scrollbar { display: none; }

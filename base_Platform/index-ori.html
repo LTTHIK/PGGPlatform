@@ -1,0 +1,354 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PCG 朴睿铂尔 - 数智化营销增长平台</title>
+    <!-- 加载 React 核心库 -->
+    <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
+    <!-- 加载 Babel -->
+    <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
+    <!-- 加载 Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- 加载 Lucide 原生库 -->
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=Inter:wght@400;600;700&display=swap');
+        
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #F4F4F2;
+            overflow: hidden;
+        }
+        .font-serif {
+            font-family: 'Noto Serif SC', serif;
+        }
+        /* 自定义滚动条 */
+        ::-webkit-scrollbar { width: 4px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: #D1D1C7; border-radius: 10px; }
+        ::-webkit-scrollbar-thumb:hover { background: #C8A064; }
+        
+        .animate-in { animation: fadeIn 0.4s ease-out forwards; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
+
+        .transition-all-500 { transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1); }
+        .scrollbar-hide::-webkit-scrollbar { display: none; }
+    </style>
+</head>
+<body>
+    <div id="root"></div>
+
+    <script type="text/babel">
+        {
+            const { useState, useEffect, useMemo, useRef } = React;
+
+            // --- 全局静态配置数据 ---
+            const STAGES = [
+                { id: 'capture', name: '需求获取', icon: 'mic' },
+                { id: 'analysis', name: '需求分析', icon: 'layers' },
+                { id: 'production', name: '素材制作', icon: 'image' },
+                { id: 'comm', name: '客户沟通', icon: 'message-square' },
+                { id: 'delivery', name: '交付上线', icon: 'rocket' },
+                { id: 'distro', name: '渠道分发', icon: 'share-2' },
+                { id: 'feedback', name: '数据反馈', icon: 'bar-chart-3' },
+            ];
+
+            const TEMPLATES = [
+                { id: 'task', name: '任务布置模板', icon: 'list-checks', desc: '聚焦于执行人、事项及截止日期' },
+                { id: 'meeting', name: '内部会议纪要', icon: 'briefcase', desc: '记录会议共识与决策结果' },
+                { id: 'market', name: '市场分析报告', icon: 'trending-up', desc: '侧重于竞品动态与趋势' },
+            ];
+
+            const FILE_TREE = [
+                {
+                    name: 'PCG-Project-BMW-2026',
+                    type: 'folder',
+                    children: [
+                        { name: 'raw_audio.wav', type: 'file', icon: 'mic' },
+                        { name: 'branding_guide.pdf', type: 'file', icon: 'file' },
+                        { name: 'minutes_v1.md', type: 'file', icon: 'file-text' }
+                    ]
+                }
+            ];
+
+            const PROMPT_LIBRARY = [
+                { id: 'refine', title: '营销需求细化', content: '请基于以上内容，将其转化为符合 PCG 标准的 PRD 方案。', category: '标准化' },
+                { id: 'logic', title: '逻辑冲突检索', content: '分析内容中关于预算和周期的冲突点。', category: '审核' },
+                { id: 'creative', title: '品牌视觉推演', content: '提炼视觉关键词、配色和字体建议。', category: '创意' }
+            ];
+
+            // 健壮的图标组件
+            const Icon = ({ name, size = 24, className = "" }) => {
+                const svgContent = useMemo(() => {
+                    if (!window.lucide || !window.lucide.icons[name]) return null;
+                    const icon = window.lucide.icons[name];
+                    return (
+                        <svg
+                            width={size}
+                            height={size}
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            stroke="currentColor"
+                            strokeWidth="2"
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            className={className}
+                            dangerouslySetInnerHTML={{ __html: icon[1].map(i => `<${i[0]} ${Object.entries(i[1]).map(([k,v]) => `${k}="${v}"`).join(' ')} />`).join('') }}
+                        />
+                    );
+                }, [name, size, className]);
+                return svgContent;
+            };
+
+            const App = () => {
+                const [activeModule, setActiveModule] = useState('capture'); 
+                const [sidebarCollapsed, setSidebarCollapsed] = useState(false);
+                const [isPromptPanelOpen, setIsPromptPanelOpen] = useState(true);
+                const [selectedFile, setSelectedFile] = useState('minutes_v1.md');
+                const [isRecording, setIsRecording] = useState(false);
+                const [selectedTemplate, setSelectedTemplate] = useState('task');
+                const [isSection1Collapsed, setIsSection1Collapsed] = useState(false); // 控制第一栏上下切换
+
+                const [processState, setProcessState] = useState({
+                    oral: "客户：我们这次品牌升级的主视觉要体现高端感，不要那种花里胡哨的色彩，最好是有那种莫兰迪灰调，但是又要能感觉到品牌的生命力，加一些丝绸流动的质感...",
+                    written: "",
+                    minutes: ""
+                });
+
+                // --- 子模块：需求获取 (严格遵循图片设计) ---
+                const CaptureModule = () => (
+                    <div className="flex-1 flex flex-col relative h-full overflow-hidden">
+                        {/* 1. 顶部全量控制按钮 */}
+                        <div className="bg-white px-8 py-3 border-b border-[#D1D1C7] shadow-sm flex flex-wrap gap-4 items-center z-20 shrink-0">
+                            <div className="flex flex-wrap gap-2">
+                                <button className="flex items-center gap-1.5 px-4 py-1.5 bg-white border border-gray-200 text-gray-600 text-[11px] font-semibold rounded-lg shadow-sm hover:border-[#C8A064] transition-all">
+                                    <Icon name="phone-incoming" size={13} /> 现场录音导入
+                                </button>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-500 text-[11px] font-medium rounded-lg hover:border-[#C8A064] transition-all"><Icon name="upload" size={13} /> 上传口水稿</button>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-500 text-[11px] font-medium rounded-lg hover:border-[#C8A064] transition-all"><Icon name="upload" size={13} /> 上传书面稿</button>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-white border border-gray-200 text-gray-500 text-[11px] font-medium rounded-lg hover:border-[#C8A064] transition-all"><Icon name="upload" size={13} /> 上传纪要</button>
+                                <button className="flex items-center gap-1.5 px-3 py-1.5 bg-[#C8A064] text-white text-[11px] font-bold rounded-lg shadow-md hover:brightness-110 transition-all"><Icon name="zap" size={13} /> 一键上传四项</button>
+                            </div>
+                            <div className="ml-auto">
+                                <button onClick={() => setProcessState({ oral: "", written: "", minutes: "" })} className="text-red-400 hover:bg-red-50 px-3 py-1.5 rounded-lg text-[11px] font-bold transition-all flex items-center gap-1">
+                                    <Icon name="trash-2" size={14} /> 清空全部
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* 三级内容区 */}
+                        <div className="flex-1 p-8 grid grid-cols-1 lg:grid-cols-3 gap-8 overflow-hidden bg-[#F4F4F2] bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]">
+                            
+                            {/* 第一栏：采集源 (包含红色三角形切换逻辑) */}
+                            <section className="flex flex-col h-full animate-in relative overflow-hidden">
+                                <div className="flex items-center gap-2 mb-4">
+                                    <div className="w-1.5 h-6 bg-[#1E272E]"></div>
+                                    <h3 className="text-sm font-serif font-bold tracking-widest text-[#1E272E] uppercase">1) 原始采集 / 口语稿</h3>
+                                </div>
+
+                                <div className="flex-1 flex flex-col relative overflow-hidden bg-white border border-[#D1D1C7] rounded-2xl shadow-sm">
+                                    
+                                    {/* --- A部分：语音采集区域 --- */}
+                                    <div className={`transition-all-500 bg-[#1E272E] p-8 flex flex-col items-center justify-center gap-6 relative overflow-hidden shrink-0 ${isSection1Collapsed ? 'h-0 py-0 opacity-0' : 'h-[240px]'}`}>
+                                        <div className="flex items-center gap-12 z-10">
+                                            <button onClick={() => setIsRecording(!isRecording)} className="flex flex-col items-center gap-2 group">
+                                                <div className={`w-16 h-16 rounded-full flex items-center justify-center transition-all ${isRecording ? 'bg-red-500 scale-110 shadow-lg' : 'bg-white/5 border border-[#C8A064]/30 text-[#C8A064] hover:bg-[#C8A064] hover:text-white'}`}>
+                                                    {isRecording ? <Icon name="stop-circle" size={32} className="text-white" /> : <Icon name="mic" size={32} />}
+                                                </div>
+                                                <span className="text-[10px] font-bold uppercase text-gray-500">现场录音</span>
+                                            </button>
+                                            <div className="h-14 w-px bg-white/10"></div>
+                                            <button className="flex flex-col items-center gap-2 group transition-all">
+                                                <div className="w-16 h-16 rounded-full bg-white/5 border border-white/10 flex items-center justify-center text-gray-500 hover:text-[#C8A064] hover:bg-white/5 transition-all"><Icon name="folder-open" size={30} /></div>
+                                                <span className="text-[10px] font-bold uppercase text-gray-500">离线上传</span>
+                                            </button>
+                                        </div>
+                                        {isRecording && <div className="flex gap-1.5 h-5 items-center z-10">{[1,2,3,4,5,6,7,8].map(i => <div key={i} className="w-1 bg-[#C8A064] rounded-full animate-bounce" style={{ height: `${Math.random()*100}%`, animationDelay: `${i*0.1}s` }}></div>)}</div>}
+                                    </div>
+
+                                    {/* --- 红色三角形切换按钮 (在此处) --- */}
+                                    <div className="flex justify-center bg-transparent relative z-30">
+                                        <button 
+                                            onClick={() => setIsSection1Collapsed(!isSection1Collapsed)}
+                                            className="w-12 h-6 bg-red-600 flex items-center justify-center rounded-b-full shadow-lg hover:h-7 transition-all -mt-px group cursor-pointer"
+                                            title="切换输入模式"
+                                        >
+                                            <div className={`transition-transform duration-500 ${isSection1Collapsed ? 'rotate-180' : ''}`}>
+                                                <svg width="12" height="10" viewBox="0 0 14 12" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                                    <path d="M7 12L0.0717968 0H13.9282L7 12Z" fill="white" />
+                                                </svg>
+                                            </div>
+                                        </button>
+                                    </div>
+
+                                    {/* --- B部分：下半部呈现 (多元文档 + 手动录入) --- */}
+                                    <div className={`transition-all-500 flex-1 overflow-y-auto px-6 py-4 space-y-6 scrollbar-hide ${isSection1Collapsed ? 'opacity-100' : 'opacity-30'}`}>
+                                        {/* 文档上传 */}
+                                        <div className="space-y-3">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l-2 border-[#C8A064] pl-2">多元文档导入</p>
+                                            <div className="grid grid-cols-3 gap-2">
+                                                <button className="flex flex-col items-center gap-2 p-3 rounded-xl border border-dashed border-gray-200 hover:border-[#C8A064] hover:bg-[#FDF8E9]/50 transition-all group">
+                                                    <Icon name="file-text" size={18} className="text-blue-500" /><span className="text-[9px] font-bold text-gray-500 uppercase">Word</span>
+                                                </button>
+                                                <button className="flex flex-col items-center gap-2 p-3 rounded-xl border border-dashed border-gray-200 hover:border-[#C8A064] hover:bg-[#FDF8E9]/50 transition-all group">
+                                                    <Icon name="file" size={18} className="text-red-500" /><span className="text-[9px] font-bold text-gray-500 uppercase">PDF</span>
+                                                </button>
+                                                <button className="flex flex-col items-center gap-2 p-3 rounded-xl border border-dashed border-gray-200 hover:border-[#C8A064] hover:bg-[#FDF8E9]/50 transition-all group">
+                                                    <Icon name="image" size={18} className="text-purple-500" /><span className="text-[9px] font-bold text-gray-500 uppercase">图片扫描</span>
+                                                </button>
+                                            </div>
+                                        </div>
+
+                                        {/* 手动录入表单 */}
+                                        <div className="space-y-3 pb-4">
+                                            <p className="text-[10px] font-bold text-gray-400 uppercase tracking-widest border-l-2 border-[#C8A064] pl-2">手动录入需求</p>
+                                            <div className="grid grid-cols-2 gap-3">
+                                                <div className="col-span-1 space-y-1"><label className="text-[8px] font-bold text-gray-400 uppercase">需求来源</label><select className="w-full bg-gray-50 border-none rounded-lg p-1.5 text-[11px] focus:ring-1 ring-[#C8A064] outline-none"><option>客户访谈</option><option>脑暴会议</option></select></div>
+                                                <div className="col-span-1 space-y-1"><label className="text-[8px] font-bold text-gray-400 uppercase">产品</label><input type="text" placeholder="Product" className="w-full bg-gray-50 border-none rounded-lg p-1.5 text-[11px] focus:ring-1 ring-[#C8A064] outline-none" /></div>
+                                                <div className="col-span-1 space-y-1"><label className="text-[8px] font-bold text-gray-400 uppercase">所属公司</label><input type="text" placeholder="Company" className="w-full bg-gray-50 border-none rounded-lg p-1.5 text-[11px] focus:ring-1 ring-[#C8A064] outline-none" /></div>
+                                                <div className="col-span-1 space-y-1"><label className="text-[8px] font-bold text-gray-400 uppercase">录入日期</label><input type="date" className="w-full bg-gray-50 border-none rounded-lg p-1.5 text-[11px] focus:ring-1 ring-[#C8A064] outline-none" /></div>
+                                                <div className="col-span-2 space-y-1"><label className="text-[8px] font-bold text-gray-400 uppercase">需求详情</label><textarea rows="3" placeholder="录入需求内容..." className="w-full bg-gray-50 border-none rounded-lg p-2 text-[11px] focus:ring-1 ring-[#C8A064] outline-none resize-none"></textarea></div>
+                                                <button className="col-span-2 py-2 bg-[#1E272E] text-[#C8A064] rounded-lg text-[10px] font-bold uppercase tracking-widest shadow-lg active:scale-95">提交手动需求</button>
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    {/* 预览窗口 - 始终保留 */}
+                                    <div className="bg-[#FDFDFD] border-t border-[#D1D1C7] p-6 h-[200px] overflow-y-auto font-serif text-sm leading-relaxed italic text-[#4A4A4A] scrollbar-hide">
+                                        <p className="text-[9px] font-bold text-gray-300 uppercase tracking-widest mb-2 italic">Real-time Feedback</p>
+                                        {processState.oral || <span className="opacity-20 italic underline decoration-dotted">等待输入数据源...</span>}
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* 第二栏：书面整理稿 */}
+                            <section className="flex flex-col h-full animate-in delay-100">
+                                <div className="flex items-center gap-2 mb-4"><div className="w-1.5 h-6 bg-[#C8A064]"></div><h3 className="text-sm font-serif font-bold tracking-widest text-[#1E272E]">2) 书面整理稿 (智感精炼)</h3></div>
+                                <div className="flex-1 bg-white border border-[#C8A064]/20 rounded-2xl p-8 shadow-sm flex flex-col">
+                                    <div className="flex-1 overflow-y-auto text-sm leading-loose text-[#2D3436] font-serif">
+                                        {processState.written ? <p className="opacity-80 whitespace-pre-wrap">{processState.written}</p> : <div className="h-full flex flex-col items-center justify-center opacity-30 gap-4"><Icon name="wand-2" size={40} className="text-[#C8A064]" /><p className="text-[11px] uppercase font-bold tracking-widest">待 AI 洗练转换</p></div>}
+                                    </div>
+                                    <button onClick={() => setProcessState({...processState, written: "【核心诉求分析】\n\nPCG 数字化引擎输出：客户明确提出本次升级需体现“宁静的生命力”。视觉方案建议采用莫兰迪冷灰调作为主基调，局部辅以琥珀金光泽，材质侧重丝绸流动感。"}) } className="mt-6 w-full py-3 bg-[#FDF8E9] text-[#8B6E3F] text-[11px] font-bold border border-[#C8A064]/30 rounded-xl hover:bg-[#C8A064] hover:text-white transition-all uppercase tracking-widest shadow-sm active:scale-95">启动 AI 整理转换</button>
+                                </div>
+                            </section>
+
+                            {/* 第三栏：落地纪要 */}
+                            <section className="flex flex-col h-full animate-in delay-200">
+                                <div className="flex items-center justify-between mb-4">
+                                    <div className="flex items-center gap-2"><div className="w-1.5 h-5 bg-[#8B6E3F]"></div><h3 className="text-sm font-serif font-bold tracking-widest text-[#1E272E]">3) 落地纪要 (执行看板)</h3></div>
+                                    <div className="relative group">
+                                        <div className="flex items-center gap-2 bg-[#FDF8E9] px-2 py-1 rounded border border-[#C8A064]/20 cursor-pointer text-[10px] font-bold text-[#8B6E3F]">{TEMPLATES.find(t => t.id === selectedTemplate)?.name} <Icon name="chevron-down" size={12} /></div>
+                                        <div className="absolute right-0 top-full mt-2 w-60 bg-white border border-gray-100 rounded-xl shadow-2xl opacity-0 scale-95 pointer-events-none group-hover:opacity-100 group-hover:scale-100 transition-all z-20">
+                                            {TEMPLATES.map(t => (
+                                                <div key={t.id} onClick={() => setSelectedTemplate(t.id)} className="px-4 py-3 cursor-pointer hover:bg-[#FDF8E9] flex gap-3 transition-colors"><Icon name={t.icon} size={14} className="mt-0.5 text-gray-400" /><div><p className="text-xs font-bold">{t.name}</p><p className="text-[9px] text-gray-400 mt-0.5 leading-tight">{t.desc}</p></div></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex-1 bg-[#1E272E] rounded-2xl p-8 shadow-2xl flex flex-col border border-white/5 relative">
+                                    <div className="flex-1 overflow-y-auto font-mono text-xs leading-loose text-white/70">
+                                        {processState.minutes === "complete" ? <div className="space-y-5 animate-in"><div className="p-4 bg-white/5 border-l-2 border-[#C8A064] rounded-lg"><p className="text-[#C8A064] mb-3 font-bold italic tracking-widest border-b border-white/5 pb-2">● PCG 执行清单</p><ul className="space-y-3"><li>视觉设计：建立莫兰迪 3D 材质资产</li><li>内容中心：细化“宁静生命力”核心文案</li></ul></div></div> : <div className="h-full flex flex-col items-center justify-center opacity-10 text-white gap-4"><Icon name="clipboard-check" size={50} /><p className="text-[11px] font-bold uppercase tracking-widest">待生成结构化资产</p></div>}
+                                    </div>
+                                    <button onClick={() => setProcessState({...processState, minutes: "complete"})} disabled={!processState.written} className="mt-6 w-full py-3 rounded-xl text-[11px] font-bold uppercase tracking-widest flex items-center justify-center gap-2 bg-[#C8A064] text-[#1E272E] hover:brightness-110 shadow-lg active:scale-95 disabled:opacity-20 transition-all"><Icon name="rocket" size={14} /> 导出为结构化纪要</button>
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                );
+
+                // --- 模块二：需求分析 ---
+                const AnalysisModule = () => (
+                    <div className="flex-1 flex overflow-hidden animate-in">
+                        <div className="w-60 bg-[#F8F9FA] border-r border-[#D1D1C7] flex flex-col shrink-0">
+                            <div className="p-4 border-b border-[#D1D1C7] flex justify-between items-center bg-white/50"><span className="text-[10px] font-bold uppercase tracking-widest text-gray-500 italic border-l-2 border-[#C8A064] pl-2">Vault Explorer</span><Icon name="search" size={14} className="text-gray-400" /></div>
+                            <div className="flex-1 overflow-y-auto p-2">
+                                {FILE_TREE.map((item, idx) => (
+                                    <div key={idx} className="mb-1">
+                                        <div className="flex items-center gap-2 px-2 py-2 hover:bg-[#E1B12C]/10 rounded-lg cursor-pointer group"><Icon name="folder-open" size={14} className="text-gray-400 group-hover:text-[#C8A064]" /><span className="text-xs font-medium text-[#2D3436] truncate">{item.name}</span></div>
+                                        <div className="ml-4 border-l border-gray-200 pl-2 mt-1 space-y-1">
+                                            {item.children.map(child => (
+                                                <div key={child.name} onClick={() => setSelectedFile(child.name)} className={`flex items-center gap-2 px-2 py-1.5 rounded-lg cursor-pointer ${selectedFile === child.name ? 'bg-[#1E272E] text-white shadow-md' : 'text-gray-500 hover:bg-gray-100'}`}><Icon name={child.icon} size={14} /><span className="text-[11px] truncate">{child.name}</span></div>
+                                            ))}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div className="flex-1 bg-white flex flex-col min-w-[300px] border-r border-[#D1D1C7] relative shadow-inner">
+                            <div className="h-12 border-b border-[#D1D1C7] flex items-center px-6 justify-between bg-white/50 backdrop-blur-sm shrink-0">
+                                <div className="flex items-center gap-2"><Icon name="file-text" size={16} className="text-[#C8A064]" /><span className="text-sm font-serif font-bold text-[#1E272E]">{selectedFile}</span></div>
+                                <div className="flex gap-4"><button className="text-[10px] text-gray-400 font-bold uppercase hover:text-[#1E272E] transition-colors"><Icon name="copy" size={12} className="inline mr-1" /> Copy</button><button className="text-[10px] text-gray-400 font-bold uppercase hover:text-[#1E272E] transition-colors"><Icon name="maximize-2" size={12} className="inline mr-1" /> Fullscreen</button></div>
+                            </div>
+                            <div className="flex-1 overflow-y-auto p-10 font-serif leading-relaxed bg-[url('https://www.transparenttextures.com/patterns/natural-paper.png')]">
+                                <div className="max-w-2xl mx-auto space-y-8 animate-in text-[#1E272E]">
+                                    <h2 className="text-2xl font-bold border-b-2 border-[#C8A064]/20 pb-4 tracking-tight">**PCG 策划方案深度细化分析**</h2>
+                                    <div className="space-y-4 text-sm opacity-80 leading-loose"><h3 className="font-bold text-[#8B6E3F] text-lg border-l-4 border-[#C8A064] pl-3 italic">战略目标执行逻辑</h3><p>基于前期的文档与录音分析，本项目重点在于全链路数字化的降本增效，建立起品牌与技术执行之间的强逻辑关联。</p></div>
+                                </div>
+                            </div>
+                        </div>
+                        <div className="w-[420px] bg-[#F4F4F2] flex flex-col shrink-0 border-l border-[#D1D1C7] shadow-2xl relative z-10">
+                            <div className="h-12 border-b border-[#D1D1C7] bg-[#1E272E] text-white flex items-center px-4 justify-between shrink-0">
+                                <div className="flex items-center gap-2"><Icon name="sparkles" size={16} className="text-[#C8A064]" /><span className="text-xs font-bold uppercase tracking-widest">Intelligence Agent</span></div>
+                                <button onClick={() => setIsPromptPanelOpen(!isPromptPanelOpen)} className={`p-1.5 rounded transition-all ${isPromptPanelOpen ? 'bg-[#C8A064] text-[#1E272E]' : 'text-white/50'}`}><Icon name="book-open" size={16} /></button>
+                            </div>
+                            <div className="flex-1 p-6 space-y-6 overflow-y-auto bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] bg-fixed">
+                                <div className="flex gap-3 animate-in"><div className="w-8 h-8 rounded-full bg-[#C8A064] flex items-center justify-center text-[#1E272E] shadow-lg font-bold text-xs">P</div><div className="bg-white p-4 rounded-2xl rounded-tl-none text-sm text-[#2D3436] shadow-sm border border-gray-100 leading-relaxed">您好，我是 PCG 智能助理。已为您准备好左侧上下文，您可以调取右侧 SOP 进行深度拆解。</div></div>
+                            </div>
+                            <div className="p-4 bg-white border-t border-[#D1D1C7] shrink-0">
+                                <div className="relative group"><textarea placeholder="输入细化指令..." className="w-full bg-gray-50 border-none rounded-2xl p-4 pr-12 text-sm focus:ring-1 ring-[#C8A064] outline-none min-h-[100px] resize-none transition-all"></textarea><button className="absolute right-3 bottom-3 p-2 bg-[#1E272E] text-[#C8A064] rounded-full shadow-lg"><Icon name="send" size={16} /></button></div>
+                            </div>
+                        </div>
+                        <div className={`bg-white border-l border-[#D1D1C7] transition-all duration-500 flex flex-col overflow-hidden ${isPromptPanelOpen ? 'w-64' : 'w-0'}`}>
+                            <div className="w-64 flex flex-col h-full shrink-0">
+                                <div className="h-12 border-b border-[#D1D1C7] flex items-center px-4 justify-between bg-gray-50 shrink-0"><span className="text-xs font-bold text-gray-500 tracking-widest uppercase italic border-l-2 border-[#C8A064] pl-2">SOP Library</span><Icon name="x" size={16} className="text-gray-400 cursor-pointer hover:text-red-500" onClick={() => setIsPromptPanelOpen(false)} /></div>
+                                <div className="flex-1 overflow-y-auto p-4 space-y-4">
+                                    {PROMPT_LIBRARY.map(p => (<div key={p.id} className="group border border-gray-100 p-4 rounded-xl hover:bg-[#FDF8E9]/50 cursor-pointer transition-all shadow-sm"><span className="text-[9px] font-bold text-[#C8A064] uppercase">{p.category}</span><h5 className="text-xs font-bold text-[#1E272E] mt-1">{p.title}</h5><p className="text-[10px] text-gray-400 italic line-clamp-3 leading-relaxed">"{p.content}"</p></div>))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+
+                return (
+                    <div className="flex h-screen w-full overflow-hidden bg-[#F4F4F2]">
+                        {/* 侧边导航 - PCG 定制 */}
+                        <nav className={`bg-[#1E272E] text-white flex flex-col transition-all duration-500 ease-in-out relative ${sidebarCollapsed ? 'w-16' : 'w-64'} shrink-0 z-30 shadow-2xl`}>
+                            <div className={`p-6 flex items-center border-b border-white/10 h-24 ${sidebarCollapsed ? 'justify-center px-0' : 'justify-between'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className="w-9 h-9 bg-[#C8A064] rounded-sm flex items-center justify-center shadow-lg shrink-0"><span className="text-[#1E272E] font-bold text-lg leading-none">P</span></div>
+                                    {!sidebarCollapsed && <div className="flex flex-col animate-in"><span className="font-serif italic text-lg tracking-widest font-bold text-[#E5E5E5] leading-none uppercase">PCG</span><span className="text-[10px] font-medium text-[#C8A064] tracking-[0.2em] mt-1 whitespace-nowrap font-serif">朴睿铂尔</span></div>}
+                                </div>
+                                <button onClick={() => setSidebarCollapsed(!sidebarCollapsed)} className={`p-1.5 rounded-lg bg-white/5 text-[#C8A064] hover:bg-white/10 transition-colors ${sidebarCollapsed ? 'absolute -right-3 top-20 bg-[#1E272E] border border-white/10 shadow-xl' : ''}`}>{sidebarCollapsed ? <Icon name="chevron-last" size={18} /> : <Icon name="chevron-first" size={18} />}</button>
+                            </div>
+                            <div className="flex-1 py-2 overflow-y-auto scrollbar-hide">
+                                {STAGES.map((stage) => (
+                                    <div key={stage.id} onClick={() => setActiveModule(stage.id)} className={`flex items-center gap-4 py-4 cursor-pointer hover:bg-white/5 transition-all group relative ${sidebarCollapsed ? 'justify-center' : 'px-6'} ${activeModule === stage.id ? 'bg-white/10 border-r-4 border-[#C8A064] text-white font-bold' : 'text-white/40 hover:text-white/70'}`}><div className={`${activeModule === stage.id ? 'text-[#C8A064]' : ''} group-hover:scale-110 transition-transform`}><Icon name={stage.icon} size={20} /></div>{!sidebarCollapsed && <span className="text-sm tracking-wide">{stage.name}</span>}{sidebarCollapsed && <div className="absolute left-full ml-4 px-2 py-1 bg-[#1E272E] text-[#C8A064] text-[10px] rounded opacity-0 group-hover:opacity-100 transition-opacity whitespace-nowrap shadow-xl border border-white/10 z-50 font-bold">{stage.name}</div>}</div>
+                                ))}
+                            </div>
+                            <div className={`p-6 border-t border-white/10 opacity-40 hover:opacity-100 transition-all cursor-pointer flex items-center gap-4 ${sidebarCollapsed ? 'justify-center px-0' : ''}`}><Icon name="settings" size={18} />{!sidebarCollapsed && <span className="text-xs uppercase tracking-tighter">系统控制中心</span>}</div>
+                        </nav>
+                        
+                        <main className="flex-1 flex flex-col relative overflow-hidden shadow-inner h-screen">
+                            <header className="h-16 bg-white/90 backdrop-blur-md border-b border-[#D1D1C7] flex items-center justify-between px-8 z-20 shrink-0">
+                                <div className="flex items-center gap-4 text-[#1E272E] font-bold"><h1 className="text-lg font-serif tracking-tight">{STAGES.find(s => s.id === activeModule)?.name} <span className="text-[#C8A064] ml-2 text-[10px] font-normal tracking-[0.3em] uppercase opacity-50 italic">Operational Strategy Unit</span></h1></div>
+                                <div className="flex items-center gap-6 text-[10px] font-mono text-gray-400 uppercase"><span className="flex items-center gap-1.5"><span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse"></span> 系统就绪</span><div className="h-4 w-px bg-gray-200"></div><span className="italic">PCG Engine v4.0</span></div>
+                            </header>
+                            
+                            <div className="flex-1 flex overflow-hidden">{activeModule === 'capture' && <CaptureModule />}{activeModule === 'analysis' && <AnalysisModule />}</div>
+
+                            <footer className="h-10 bg-[#E8E8E1] border-t border-[#D1D1C7] flex items-center px-8 justify-between text-[10px] text-gray-400 font-mono shrink-0">
+                                <div className="flex gap-8 items-center"><div className="flex items-center gap-2"><Icon name="hard-drive" size={12} /> STORAGE: PCG_VAULT_S1</div><div className="flex items-center gap-2 font-bold text-[#C8A064]/60">PREMIERE CONSULTING GROUP</div></div>
+                                <div className="uppercase tracking-widest opacity-60 font-bold underline decoration-[#C8A064]/30 italic font-serif">A Multi-Agent Intelligent Platform</div>
+                            </footer>
+                        </main>
+                    </div>
+                );
+            };
+            const root = ReactDOM.createRoot(document.getElementById('root'));
+            root.render(<App />);
+        }
+    </script>
+</body>
+</html>

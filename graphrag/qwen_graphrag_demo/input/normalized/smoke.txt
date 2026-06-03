@@ -1,0 +1,1 @@
+GraphRAG smoke test. Company A builds product X.

@@ -1,0 +1,184 @@
+### This config file contains required core defaults that must be set, along with a handful of common optional settings.
+### For a full list of available settings, see https://microsoft.github.io/graphrag/config/yaml/
+
+### LLM settings ###
+## There are a number of settings to tune the threading and token limits for LLM calls - check the docs.
+
+# Reduce 并发，降低 LLM 接口限流风险。
+concurrent_requests: 1
+
+completion_models:
+  default_completion_model:
+    type: litellm
+    model_provider: openai
+    model: qwen3-vl
+    auth_method: api_key
+    api_key: ${LOCAL_API_KEY}
+    api_base: ${LOCAL_CHAT_API_BASE}
+    call_args:
+      temperature: 0.1
+      # extract_graph 等需长结构化输出；过小会导致截断、报 “No entities detected”
+      max_tokens: 4096
+      # 单次请求上限（秒），避免网络异常时无限等待；过短可改为 300
+      timeout: 180
+    retry:
+      type: exponential_backoff
+
+# 本地 OpenAI 兼容 /v1/embeddings（qwen3-embedding）。勿在 call_args 里随意传 dimensions，以免与网关校验冲突。
+# 若产出维度与 vector_store.index_schema.vector_size 不一致，首次 index 自检可能会按模型实际维度对齐。
+embedding_models:
+  default_embedding_model:
+    type: litellm
+    model_provider: openai
+    model: qwen3-embedding
+    auth_method: api_key
+    api_key: ${LOCAL_API_KEY}
+    api_base: ${LOCAL_EMBEDDING_API_BASE}
+    call_args:
+      encoding_format: "float"
+      timeout: 120
+    retry:
+      type: exponential_backoff
+
+### Document processing settings ###
+
+input:
+  type: text # [csv, text, json, jsonl]
+  # 只索引转换后的标准化文本，避免把旧 demo 的 input/*.txt 混进来
+  file_pattern: ".*/normalized/.*\\.txt"
+
+chunking:
+  type: tokens
+  size: 1200
+  overlap: 100
+  encoding_model: o200k_base
+
+### Storage settings ###
+## If blob storage is specified in the following four sections,
+## connection_string and container_name must be provided
+
+input_storage:
+  type: file # [file, blob, cosmosdb]
+  base_dir: "input"
+
+output_storage:
+  type: file # [file, blob, cosmosdb]
+  base_dir: "output"
+
+reporting:
+  type: file # [file, blob]
+  base_dir: "logs"
+
+cache:
+  type: json # [json, memory, none]
+  storage:
+    type: file # [file, blob, cosmosdb]
+    base_dir: "cache"
+    
+vector_store:
+  type: lancedb
+  db_uri: output/lancedb
+  index_schema:
+    text_unit_text:
+      vector_size: 1024
+    entity_description:
+      vector_size: 1024
+    community_full_content:
+      vector_size: 1024
+
+### Workflow settings ###
+
+embed_text:
+  embedding_model_id: default_embedding_model
+  # 本地嵌入若支持更大 batch 可提高此值；网关报错时再减小
+  batch_size: 10
+  # 与 vector_store.index_schema 一致；供 basic / local 等检索。含 community 后嵌入调用量增加。
+  names: [entity_description, community_full_content, text_unit_text]
+
+extract_graph:
+  completion_model_id: default_completion_model
+  prompt: "prompts/extract_graph.txt"
+  entity_types: [organization,person,geo,event]
+  # 0=每块只打 1 次补全；1 会再打一轮 CONTINUE，耗时约翻倍
+  max_gleanings: 0
+
+summarize_descriptions:
+  completion_model_id: default_completion_model
+  prompt: "prompts/summarize_descriptions.txt"
+  max_length: 500
+
+extract_graph_nlp:
+  text_analyzer:
+    extractor_type: regex_english # [regex_english, syntactic_parser, cfg]
+
+cluster_graph:
+  max_cluster_size: 10
+
+extract_claims:
+  enabled: false
+  completion_model_id: default_completion_model
+  prompt: "prompts/extract_claims.txt"
+  description: "Any claims or facts that could be relevant to information discovery."
+  max_gleanings: 1
+
+# 由于我们在 demo 场景下优先规避 LLM 限流，NLP 抽取得到的图通常会更小。
+# 这里把 prune 阈值调松，避免把所有边/点都剪掉导致流水线中断。
+prune_graph:
+  min_node_freq: 1
+  min_node_degree: 0
+  min_edge_weight_pct: 0.0
+  remove_ego_nodes: false
+  lcc_only: false
+
+community_reports:
+  completion_model_id: default_completion_model
+  graph_prompt: "prompts/community_report_graph.txt"
+  text_prompt: "prompts/community_report_text.txt"
+  max_length: 2000
+  max_input_length: 8000
+
+snapshots:
+  graphml: true
+  embeddings: false
+
+# 中文等语料使用 extract_graph_nlp + regex_english 时，常见「每个 text unit 里名词短语不足 2 个」，
+# 无法形成共现边，relationships 为空且不会写出 parquet，后续 prune_graph 会报找不到文件。
+# 此处使用 LLM 的 extract_graph，并生成 community_reports，以支持 graphrag query --method local / global。
+workflows:
+  - load_input_documents
+  - create_base_text_units
+  - create_final_documents
+  - extract_graph
+  - finalize_graph
+  - create_communities
+  - create_final_text_units
+  - create_community_reports
+  - generate_text_embeddings
+
+### Query settings ###
+## The prompt locations are required here, but each search method has a number of optional knobs that can be tuned.
+## See the config docs: https://microsoft.github.io/graphrag/config/yaml/#query
+
+local_search:
+  completion_model_id: default_completion_model
+  embedding_model_id: default_embedding_model
+  prompt: "prompts/local_search_system_prompt.txt"
+
+global_search:
+  completion_model_id: default_completion_model
+  map_prompt: "prompts/global_search_map_system_prompt.txt"
+  reduce_prompt: "prompts/global_search_reduce_system_prompt.txt"
+  knowledge_prompt: "prompts/global_search_knowledge_system_prompt.txt"
+
+drift_search:
+  completion_model_id: default_completion_model
+  embedding_model_id: default_embedding_model
+  prompt: "prompts/drift_search_system_prompt.txt"
+  reduce_prompt: "prompts/drift_search_reduce_prompt.txt"
+
+basic_search:
+  completion_model_id: default_completion_model
+  embedding_model_id: default_embedding_model
+  prompt: "prompts/basic_search_system_prompt.txt"
+  k: 100
+  max_context_tokens: 24000

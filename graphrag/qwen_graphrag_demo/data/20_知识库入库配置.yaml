@@ -1,0 +1,28 @@
+company: 星航智能科技有限公司
+vector_database:
+  type: Milvus
+  collection: company_kb_chunks
+  embedding_model: bge-m3
+knowledge_graph:
+  type: Neo4j
+  node_labels:
+    - Company
+    - Department
+    - Person
+    - Project
+    - Customer
+    - Location
+    - Policy
+  relation_types:
+    - BELONGS_TO
+    - MANAGES
+    - RESPONSIBLE_FOR
+    - PARTICIPATED_IN
+    - LOCATED_AT
+    - SERVED_CUSTOMER
+chunking:
+  chunk_size: 800
+  overlap: 120
+security:
+  enable_desensitization: true
+  default_level: internal

@@ -1,0 +1,11 @@
+# 预处理 ingest/convert_to_graphrag_input.py 及与本 demo 共用的轻量依赖
+markitdown[docx,pptx]
+pandas>=2.0.0
+pyarrow>=14.0.0
+PyYAML>=6.0
+openpyxl
+beautifulsoup4
+pillow
+pytesseract
+openai>=1.0.0
+httpx>=0.27.0

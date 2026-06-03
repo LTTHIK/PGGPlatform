@@ -1,0 +1,72 @@
+# ── Python 虚拟环境 ──────────────────────────────────────────
+**/basePlatformltt_env/
+**/graphragltt_env/
+**/.venv/
+**/venv/
+.env/
+
+# ── 密钥（勿提交；使用 .env.example）──────────────────────────
+**/.env
+!**/.env.example
+
+# ── Node ─────────────────────────────────────────────────────
+**/node_modules/
+**/dist/
+**/dist-ssr/
+
+# ── 运行时 / 日志 / PID ──────────────────────────────────────
+.runtime/
+**/runtime-logs/
+**/runtime-pids/
+**/logs/
+*.log
+
+# ── 平台运行时数据（Wiki、任务目录）──────────────────────────
+base_Platform/workspace/projects/
+
+# ── GraphRAG 索引产物 ────────────────────────────────────────
+**/graphrag_runs/
+graphrag/**/output/
+graphrag/**/cache/
+graphrag/**/lancedb/
+**/output/lancedb/
+
+# ── 大体积模型与录音（请本机单独部署）────────────────────────
+**/paraformer_model/
+**/recordings/
+
+# ── 离线客户端构建产物 ───────────────────────────────────────
+base_Platform/offline-audio-client/releases/
+base_Platform/offline-audio-client/dist/
+base_Platform/offline-audio-client/build/
+
+# ── GraphRAG 历史 demo 备份（保留 qwen_graphrag_demo 即可）──
+graphrag/qwen_graphrag_demo_backup_*/
+graphrag/glm_zai_demo_backup_*/
+graphrag/glm_zai_demo copy*/
+
+# ── 嵌套仓库 .git 备份（体积过大，勿提交）────────────────────
+**/.git.vendor-backup-*/
+
+# ── Python 缓存 ──────────────────────────────────────────────
+**/__pycache__/
+**/*.py[cod]
+**/*.egg-info/
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# ── IDE / OS ─────────────────────────────────────────────────
+.idea/
+.vscode/
+.DS_Store
+*.swp
+
+# ── GraphRAG / Turbo 杂项 ────────────────────────────────────
+.turbo/
+.pipeline/
+.pipelines/
+site/
+docsite/
+temp_azurite/
+__blobstorage__/

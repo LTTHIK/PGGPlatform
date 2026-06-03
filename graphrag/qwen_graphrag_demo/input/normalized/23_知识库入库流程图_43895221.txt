@@ -1,0 +1,22 @@
+---metadata---
+{"source_file": "/mnt/dockerContainerSave/memory/qhq/graphrag/qwen_graphrag_demo/data/23_知识库入库流程图.png", "filename": "23_知识库入库流程图.png", "suffix": ".png"}
+---content---
+## 视觉模型描述
+企业知识库入库流程：上传→解析→切块→向量化→抽取→写入Neo4j→问答溯源。
+
+## OCR 识别文本
+ 
+
+企业知识库入库流程
+
+|
+
+ 
+
+ 
+
+ 
+
+ 
+
+| 上传文件   Ly proms 文本切块   Ly 向量化    Ly 实体关系抽取 Ly BANeo4j   Ly 问答与溯源  |

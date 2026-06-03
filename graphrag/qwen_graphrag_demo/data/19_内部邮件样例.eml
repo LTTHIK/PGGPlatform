@@ -1,0 +1,19 @@
+From: li.ting@xinghang-ai.example
+To: he.yuan@xinghang-ai.example, gao.ning@xinghang-ai.example
+Subject: GraphRAG企业知识库二期需求确认
+Date: Tue, 21 Apr 2026 10:20:00 +0800
+Content-Type: text/plain; charset="utf-8"
+
+各位好：
+
+GraphRAG企业知识库二期需要增加以下能力：
+1. 支持PDF表格解析结果进入知识图谱；
+2. 支持项目负责人、参与人、客户之间的关系抽取；
+3. 支持按部门、项目和数据安全等级进行权限过滤；
+4. 支持回答“某项目谁负责、谁参与、交付给哪个客户”等问题。
+
+负责人：李婷
+参与：何远、高宁、刘博、林若
+关联项目：P002 GraphRAG企业知识库
+
+谢谢。
