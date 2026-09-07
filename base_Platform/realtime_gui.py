@@ -555,10 +555,15 @@ class RealtimeAsrGui:
 
     def _build_minio_client(self) -> MinioClient:
         if self.minio_client is None:
+            endpoint = (os.getenv("MINIO_ENDPOINT") or "").strip()
+            access_key = (os.getenv("MINIO_ACCESS_KEY") or "").strip()
+            secret_key = (os.getenv("MINIO_SECRET_KEY") or "").strip()
+            if not endpoint or not access_key or not secret_key:
+                raise ValueError("请通过环境变量配置 MINIO_ENDPOINT、MINIO_ACCESS_KEY 和 MINIO_SECRET_KEY")
             self.minio_client = MinioClient(
-                endpoint="http://111.228.12.207:9000",
-                access_key="minioadmin",
-                secret_key="Minio@123456",
+                endpoint=endpoint,
+                access_key=access_key,
+                secret_key=secret_key,
             )
         return self.minio_client
 

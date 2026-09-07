@@ -111,9 +111,12 @@ DEEPSEEK_MODEL = os.getenv("DEEPSEEK_MODEL", "deepseek-chat")
 DEEPSEEK_VERIFY_SSL = env_flag("DEEPSEEK_VERIFY_SSL", True)
 DEEPSEEK_TIMEOUT_S = int(os.getenv("DEEPSEEK_TIMEOUT_S", "120"))
 
-MINIO_ENDPOINT = os.getenv("MINIO_ENDPOINT", "http://111.228.12.207:9000")
-MINIO_ACCESS_KEY = os.getenv("MINIO_ACCESS_KEY", "minioadmin")
-MINIO_SECRET_KEY = os.getenv("MINIO_SECRET_KEY", "Minio@123456")
+MINIO_ENDPOINT = (os.getenv("MINIO_ENDPOINT") or "").strip()
+MINIO_ACCESS_KEY = (os.getenv("MINIO_ACCESS_KEY") or "").strip()
+MINIO_SECRET_KEY = (os.getenv("MINIO_SECRET_KEY") or "").strip()
+
+if not MINIO_ENDPOINT or not MINIO_ACCESS_KEY or not MINIO_SECRET_KEY:
+    raise RuntimeError("MINIO_ENDPOINT, MINIO_ACCESS_KEY and MINIO_SECRET_KEY must be configured")
 
 DEFAULT_SAMPLE_RATE = int(os.getenv("ASR_SAMPLE_RATE", "16000"))
 MAX_RECORDING_BUFFER_S = float(os.getenv("MAX_RECORDING_BUFFER_S", "180"))

@@ -1,6 +1,6 @@
 # 项目现状与目标态对接信息清单（自动生成）
 
-> 本文档基于仓库 `/mnt/dockerContainerSave/wyt/wyt-base_paltform` 的**静态代码与配置**整理，用于从「需求分析页 + DeepSeek + Documents + Agent + SOP」演进至「上传 / Skill / 结构化分析 / RR→CRR / 候选 IR / 正式 IR / Wiki 目录树」。  
+> 本文档基于当前仓库的**静态代码与配置**整理，用于从「需求分析页 + DeepSeek + Documents + Agent + SOP」演进至「上传 / Skill / 结构化分析 / RR→CRR / 候选 IR / 正式 IR / Wiki 目录树」。
 > **未在仓库中出现的内容**已标注为「空」或「需补充」，不臆造业务定义。
 
 ---
@@ -295,7 +295,7 @@ backend/
 
 | 项 | 结论 |
 |----|------|
-| 登录 | **有**（JWT，`localStorage` 键 `wyt_auth_token`） |
+| 登录 | **有**（JWT，`localStorage` 键 `pgg_auth_token`） |
 | 角色 | `admin`、`user`；用户管理仅 admin |
 | 审核人 / IR promote | **未实现** |
 | 操作日志 | `session_events` 与会话相关；**无**通用审计表 |

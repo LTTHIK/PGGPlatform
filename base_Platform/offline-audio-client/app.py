@@ -21,8 +21,8 @@ try:
 except Exception:  # pragma: no cover
     winsound = None
 
-# 生产默认 API（写死，不使用环境变量覆盖）
-DEFAULT_API_BASE = "https://111.228.12.207:5174"
+# 可由环境变量或 data/client_config.json 覆盖
+DEFAULT_API_BASE = os.getenv("PGG_API_BASE", "https://127.0.0.1:5174")
 
 
 def _resolve_app_dir() -> Path:
@@ -72,9 +72,6 @@ def atomic_write_json(path: Path, data: Any) -> None:
 
 def tls_verify_for_base(base: str) -> bool:
     if base.startswith("https://127.0.0.1") or base.startswith("https://localhost"):
-        return False
-    # 固定服务地址如使用自签名证书，关闭校验避免被误判为“无网络”
-    if base.startswith("https://111.228.12.207"):
         return False
     return True
 

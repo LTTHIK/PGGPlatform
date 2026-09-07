@@ -297,7 +297,7 @@ curl -s -o /dev/null -w "%{http_code}\n" http://127.0.0.1:18000/docs
 ```bash
 export TOKEN=$(curl -s -X POST http://127.0.0.1:18000/api/auth/login \
   -H 'Content-Type: application/json' \
-  -d '{"username":"wyt","password":"123456"}' | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
+  -d "{\"username\":\"${SEED_ADMIN_USERNAME}\",\"password\":\"${SEED_ADMIN_PASSWORD}\"}" | python3 -c "import sys,json; print(json.load(sys.stdin)['access_token'])")
 echo "TOKEN_LEN=${#TOKEN}"
 ```
 

@@ -20,6 +20,13 @@
 **/runtime-pids/
 **/logs/
 *.log
+*.out
+nohup.out
+
+# ── 本地 TLS 证书（仅在开发机生成）──────────────────────────
+**/ssl/*.key
+**/ssl/*.pem
+**/ssl/*.crt
 
 # ── 平台运行时数据（Wiki、任务目录）──────────────────────────
 base_Platform/workspace/projects/
@@ -39,6 +46,9 @@ graphrag/**/lancedb/
 base_Platform/offline-audio-client/releases/
 base_Platform/offline-audio-client/dist/
 base_Platform/offline-audio-client/build/
+base_Platform/offline-audio-client/data/client_config.json
+base_Platform/offline-audio-client/data/manifest.json
+base_Platform/offline-audio-client/data/*.tmp
 
 # ── GraphRAG 历史 demo 备份（保留 qwen_graphrag_demo 即可）──
 graphrag/qwen_graphrag_demo_backup_*/

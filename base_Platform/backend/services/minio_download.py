@@ -14,9 +14,11 @@ from botocore.client import Config
 
 
 def _minio_client():
-    endpoint = (os.getenv("MINIO_ENDPOINT") or "http://111.228.12.207:9000").strip()
-    access_key = (os.getenv("MINIO_ACCESS_KEY") or "minioadmin").strip()
-    secret_key = (os.getenv("MINIO_SECRET_KEY") or "Minio@123456").strip()
+    endpoint = (os.getenv("MINIO_ENDPOINT") or "").strip()
+    access_key = (os.getenv("MINIO_ACCESS_KEY") or "").strip()
+    secret_key = (os.getenv("MINIO_SECRET_KEY") or "").strip()
+    if not endpoint or not access_key or not secret_key:
+        raise RuntimeError("MINIO_ENDPOINT, MINIO_ACCESS_KEY and MINIO_SECRET_KEY must be configured")
     return boto3.client(
         "s3",
         endpoint_url=endpoint,

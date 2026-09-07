@@ -19,8 +19,6 @@ from pydantic import BaseModel, Field
 JWT_ALGORITHM = "HS256"
 ACCESS_TOKEN_EXPIRE_DAYS = 7
 PBKDF2_ITERATIONS = 210_000
-SEED_ADMIN_USERNAME = "wyt"
-SEED_ADMIN_PASSWORD = "123456"
 
 _user_store: UserStore | None = None
 _jwt_secret: str = ""
@@ -36,9 +34,9 @@ def configure_auth(store: UserStore, jwt_secret: str) -> None:
 
 def resolve_jwt_secret() -> str:
     raw = (os.getenv("JWT_SECRET") or "").strip()
-    if raw:
-        return raw
-    return "dev-insecure-jwt-secret-change-me"
+    if not raw:
+        raise RuntimeError("JWT_SECRET must be set in base_Platform/.env")
+    return raw
 
 
 def hash_password(plain: str) -> str:
@@ -125,21 +123,27 @@ class UserStore:
         self._ensure_seed_admin()
 
     def _ensure_seed_admin(self) -> None:
+        seed_admin_username = (os.getenv("SEED_ADMIN_USERNAME") or "").strip()
+        seed_admin_password = (os.getenv("SEED_ADMIN_PASSWORD") or "").strip()
+        if not seed_admin_username or not seed_admin_password:
+            raise RuntimeError(
+                "SEED_ADMIN_USERNAME and SEED_ADMIN_PASSWORD must be set in base_Platform/.env"
+            )
         with self._lock:
             row = self._conn.execute(
                 "SELECT id FROM users WHERE username = %s",
-                (SEED_ADMIN_USERNAME,),
+                (seed_admin_username,),
             ).fetchone()
             if row:
                 self._conn.rollback()
                 return
-            ph = hash_password(SEED_ADMIN_PASSWORD)
+            ph = hash_password(seed_admin_password)
             self._conn.execute(
                 """
                 INSERT INTO users (username, password_hash, role, is_active)
                 VALUES (%s, %s, 'admin', true)
                 """,
-                (SEED_ADMIN_USERNAME, ph),
+                (seed_admin_username, ph),
             )
             self._conn.commit()
 

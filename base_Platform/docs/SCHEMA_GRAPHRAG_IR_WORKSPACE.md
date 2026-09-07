@@ -112,7 +112,7 @@ users * ──* analysis_tasks (created_by)
 ## 五、迁移命令
 
 ```bash
-export FILE_INDEX_DATABASE_URL=postgresql://craft:craft@127.0.0.1:5434/ltt_craft
+export FILE_INDEX_DATABASE_URL=postgresql://craft:<password>@127.0.0.1:5434/ltt_craft
 psql "$FILE_INDEX_DATABASE_URL" -v ON_ERROR_STOP=1 \
   -f /mnt/dockerContainerSave/memory/ltt/workspace/base_Platform/database/schema_graphrag_ir_workspace.sql
 ```

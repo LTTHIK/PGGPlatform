@@ -22,7 +22,7 @@ Set-ExecutionPolicy -Scope CurrentUser RemoteSigned -Force   # 若脚本被禁�
 4. 程序会在 exe **同目录** 下创建 `data\`（清单、录音、登录 token），便于备份与升级时保留数据。
 5. 若出现 **Windows 已保护你的电脑**：未签名 exe 属正常情况，点「更多信息」→「仍要运行」；生产环境建议使用代码签名证书。
 
-默认连接地址在程序内写死为 `https://111.228.12.207:5174`。
+默认连接本机 `https://127.0.0.1:5174`，可通过 `PGG_API_BASE` 或 `data/client_config.json` 修改。需要预置地址时可复制 `data/client_config.example.json`；令牌、用户名、设备清单和录音仅保存在本地，不提交到 Git。
 
 ### 交给客户的 ZIP（在 Windows 上生成）
 

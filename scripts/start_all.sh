@@ -35,10 +35,10 @@ MINIO_CHECK_STRICT="${MINIO_CHECK_STRICT:-1}"
 VLLM_START_TIMEOUT="${VLLM_START_TIMEOUT:-900}"
 SERVICE_WAIT_TIMEOUT="${SERVICE_WAIT_TIMEOUT:-120}"
 
-# 远程 MinIO 默认（与 backend/app.py、minio_download.py 一致；可被 base_Platform/.env 覆盖）
-MINIO_ENDPOINT="${MINIO_ENDPOINT:-http://111.228.12.207:9000}"
-MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-minioadmin}"
-MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-Minio@123456}"
+# MinIO 必须由部署环境或 base_Platform/.env 显式配置
+MINIO_ENDPOINT="${MINIO_ENDPOINT:-}"
+MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-}"
+MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-}"
 
 log() { echo "[$(date '+%H:%M:%S')] $*"; }
 
@@ -79,11 +79,10 @@ load_platform_env() {
     # shellcheck disable=SC1090
     source "$BP/.env"
     set +a
-    # .env 未显式配置 MINIO 时仍用远程默认
-    MINIO_ENDPOINT="${MINIO_ENDPOINT:-http://111.228.12.207:9000}"
-    MINIO_ACCESS_KEY="${MINIO_ACCESS_KEY:-minioadmin}"
-    MINIO_SECRET_KEY="${MINIO_SECRET_KEY:-Minio@123456}"
   fi
+  : "${MINIO_ENDPOINT:?Set MINIO_ENDPOINT in base_Platform/.env}"
+  : "${MINIO_ACCESS_KEY:?Set MINIO_ACCESS_KEY in base_Platform/.env}"
+  : "${MINIO_SECRET_KEY:?Set MINIO_SECRET_KEY in base_Platform/.env}"
   export MINIO_ENDPOINT MINIO_ACCESS_KEY MINIO_SECRET_KEY
 }
 
@@ -270,7 +269,7 @@ print_summary() {
   echo "========================================"
   echo " workspace 全栈启动完成"
   echo "========================================"
-  echo "  PostgreSQL     postgresql://craft:craft@127.0.0.1:5434/ltt_craft"
+  echo "  PostgreSQL     postgresql://craft@127.0.0.1:5434/ltt_craft（口令来自环境变量）"
   echo "  MinIO (远程)   $MINIO_ENDPOINT"
   echo "  vLLM Chat      http://127.0.0.1:8001/v1"
   echo "  vLLM Embedding http://127.0.0.1:8002/v1"

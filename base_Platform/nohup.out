@@ -1,4 +1,0 @@
-bash: line 1: 264008 Killed                  "/workspace/wyt-base_paltform/.venv/bin/python" -m uvicorn backend.app:app --host "127.0.0.1" --port "18000" >> "/workspace/wyt-base_paltform/runtime-logs/backend.log" 2>&1
-bash: line 1: 269156 Killed                  "/workspace/wyt-base_paltform/.venv/bin/python" -m uvicorn backend.app:app --host "127.0.0.1" --port "18000" >> "/workspace/wyt-base_paltform/runtime-logs/backend.log" 2>&1
-bash: line 1: 296832 Killed                  "/workspace/wyt-base_paltform/.venv/bin/python" -m uvicorn backend.app:app --host "127.0.0.1" --port "18000" >> "/workspace/wyt-base_paltform/runtime-logs/backend.log" 2>&1
-bash: line 1: 676855 Killed                  "/workspace/wyt-base_paltform/.venv/bin/python" -m uvicorn backend.app:app --host "127.0.0.1" --port "18000" >> "/workspace/wyt-base_paltform/runtime-logs/backend.log" 2>&1

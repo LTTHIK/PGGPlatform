@@ -5,7 +5,7 @@ import './style.css';
 
 
 
-            const AUTH_TOKEN_KEY = "wyt_auth_token";
+            const AUTH_TOKEN_KEY = "pgg_auth_token";
 
             const STAGES = [
                 { id: 'capture', name: '需求采集', icon: 'mic' },
@@ -1331,7 +1331,7 @@ const handleRecordToggle = () => {
                                     <div className="w-10 h-10 bg-[#C8A064] rounded-md flex items-center justify-center font-bold text-[#1E272E]">P</div>
                                     <div>
                                         <h1 className="text-lg font-serif font-bold text-[#1E272E]">PCG 平台登录</h1>
-                                        <p className="text-[10px] text-gray-500 mt-0.5">初始管理员账号 wyt / 123456（首次启动数据库后自动创建）</p>
+                                        <p className="text-[10px] text-gray-500 mt-0.5">初始管理员由服务端环境变量配置</p>
                                     </div>
                                 </div>
                                 <div className="flex gap-2 mb-4">

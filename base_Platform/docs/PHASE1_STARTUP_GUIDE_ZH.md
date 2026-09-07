@@ -37,7 +37,7 @@ export VLLM=/mnt/dockerContainerSave/vllm-big-model
 | GraphRAG 8090 | **8090** | `graphrag/graphragltt_env` | `graphrag index` HTTP 封装 |
 | base_Platform | **18000** | `base_Platform/basePlatformltt_env` | staging、`run-phase1` 编排 |
 | 前端 Vite | **5173** | `frontend/node_modules` | HTTPS 开发服（可选） |
-| MinIO | **9000** | 远程 `111.228.12.207` | 上传对象存储（不在本机 Docker） |
+| MinIO | **9000** | 由 `MINIO_ENDPOINT` 配置 | 上传对象存储（不在本机 Docker） |
 
 ---
 
@@ -140,17 +140,20 @@ curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:18000/docs
 文件：`base_Platform/.env`（修改后须**重启** 18000）
 
 ```env
-FILE_INDEX_DATABASE_URL=postgresql://craft:craft@127.0.0.1:5434/ltt_craft
+POSTGRES_PASSWORD=<set-a-strong-password>
+FILE_INDEX_DATABASE_URL=postgresql://craft:<same-password>@127.0.0.1:5434/ltt_craft
 GRAPHRAG_HTTP_BASE_URL=http://127.0.0.1:8090
 GRAPHRAG_POLL_INTERVAL_S=5
 GRAPHRAG_POLL_TIMEOUT_S=3600
-MINIO_ENDPOINT=http://111.228.12.207:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=Minio@123456
-JWT_SECRET=dev-insecure-jwt-secret-change-me
+MINIO_ENDPOINT=https://<your-minio-host>:9000
+MINIO_ACCESS_KEY=<set-locally>
+MINIO_SECRET_KEY=<set-locally>
+JWT_SECRET=<set-a-long-random-value>
+SEED_ADMIN_USERNAME=<set-locally>
+SEED_ADMIN_PASSWORD=<set-a-strong-password>
 ```
 
-未配置 `MINIO_*` 时，代码默认连同一远程地址（见 `backend/app.py`）。
+`MINIO_*`、`JWT_SECRET` 与初始管理员信息必须显式配置；缺失时服务会拒绝启动。
 
 ---
 
@@ -161,7 +164,7 @@ curl -s http://127.0.0.1:8001/v1/models | head -c 80; echo " 8001"
 curl -s http://127.0.0.1:8002/v1/models | head -c 80; echo " 8002"
 curl -s http://127.0.0.1:8090/api/health | python3 -m json.tool
 curl -s -o /dev/null -w '%{http_code}\n' http://127.0.0.1:18000/docs
-curl -s "${MINIO_ENDPOINT:-http://111.228.12.207:9000}/minio/health/live"
+curl -s "${MINIO_ENDPOINT}/minio/health/live"
 ```
 
 ---

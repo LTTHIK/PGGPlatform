@@ -9,7 +9,7 @@
 | 顺序 | 组件 | 端口 / 地址 | 说明 |
 |------|------|-------------|------|
 | 1 | PostgreSQL（Docker `ltt-craft-pg`） | `127.0.0.1:5434` / `ltt_craft` | 本机 Docker 启动 |
-| 2 | **MinIO（远程）** | **`http://111.228.12.207:9000`** | **不启动容器**；脚本做 `/minio/health/live` 自检 |
+| 2 | **MinIO（外部服务）** | **由 `MINIO_ENDPOINT` 配置** | **不启动容器**；脚本做 `/minio/health/live` 自检 |
 | 3 | vLLM Qwen3-VL | **8001** | GPU |
 | 4 | vLLM Qwen3-Embedding | **8002** | GPU |
 | 5 | vLLM Qwen3-Reranker（可选） | **8003** | GPU |
@@ -24,9 +24,9 @@
 远程 MinIO 凭证写在 **`base_Platform/.env`**（与 `backend/app.py` 一致）：
 
 ```env
-MINIO_ENDPOINT=http://111.228.12.207:9000
-MINIO_ACCESS_KEY=minioadmin
-MINIO_SECRET_KEY=Minio@123456
+MINIO_ENDPOINT=https://<your-minio-host>:9000
+MINIO_ACCESS_KEY=<set-locally>
+MINIO_SECRET_KEY=<set-locally>
 ```
 
 启动脚本会在拉起后端前 **curl 健康检查**；不可达时默认 **中止启动**（避免 upload/staging 静默失败）。
@@ -57,7 +57,7 @@ START_SKIP_MINIO_CHECK=1 ./scripts/start_all.sh
 MINIO_CHECK_STRICT=0 ./scripts/start_all.sh
 
 # 覆盖远程 MinIO 地址
-MINIO_ENDPOINT=http://111.228.12.207:9000 ./scripts/start_all.sh
+MINIO_ENDPOINT=https://<your-minio-host>:9000 ./scripts/start_all.sh
 
 # vLLM 目录非默认路径
 VLLM_ROOT=/path/to/vllm-big-model ./scripts/start_all.sh

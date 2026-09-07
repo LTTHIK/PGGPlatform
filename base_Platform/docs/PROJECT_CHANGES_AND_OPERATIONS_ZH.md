@@ -34,7 +34,7 @@ docker exec ltt-craft-pg pg_isready -U craft -d ltt_craft
 连接串（`.env`）：
 
 ```text
-postgresql://craft:craft@127.0.0.1:5434/ltt_craft
+postgresql://craft:<password>@127.0.0.1:5434/ltt_craft
 ```
 
 ### 2.2 扩展表迁移
